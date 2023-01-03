@@ -1,0 +1,335 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tourist Spot</title>
+  
+  
+  <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+  <link rel="stylesheet" href="{% static '/modal.css' %}">
+</head>
+
+<body>
+  <nav class="leaflet-control">
+    <div class="sidebar-top">
+      <span class="shrink-btn">
+        <i class='bx bx-chevron-left'></i>
+      </span>
+      <img src="{% static '/img/logo.png' %}" class="logo" alt="">
+      <h3 class="hide">TouristSpot</h3>
+    </div>
+
+    <div class="search">
+      <i class='bx bx-search'></i>
+      <input type="text" class="hide" placeholder="Quick Search ...">
+    </div>
+
+    <div class="sidebar-links">
+      <ul>
+        <div class="active-tab"></div>
+        <li class="tooltip-element" data-tooltip="0">
+          <a href="#" class="active" data-active="0">
+            <div class="icon">
+              <i class='bx bx-tachometer'></i>
+              <i class='bx bxs-tachometer'></i>
+            </div>
+            <span class="link hide">Home</span>
+          </a>
+        </li>
+        <li class="tooltip-element" data-tooltip="1">
+          <a href="#" data-active="1">
+            <div class="icon">
+              <i class='bx bx-folder'></i>
+              <i class='bx bxs-folder'></i>
+            </div>
+            <span class="link hide">Places</span>
+          </a>
+        </li>
+        <li class="tooltip-element" data-tooltip="2">
+          <a href="#" data-active="2">
+            <div class="icon">
+              <i class='bx bx-message-square-detail'></i>
+              <i class='bx bxs-message-square-detail'></i>
+            </div>
+            <span class="link hide">Hotels</span>
+          </a>
+        </li>
+        <li class="tooltip-element" data-tooltip="3">
+          <a href="#" data-active="3">
+            <div class="icon">
+              <i class='bx bx-bar-chart-square'></i>
+              <i class='bx bxs-bar-chart-square'></i>
+            </div>
+            <span class="link hide">Analytics</span>
+          </a>
+        </li>
+        <div class="tooltip">
+          <span class="show">Dashboard</span>
+          <span>Projects</span>
+          <span>Messages</span>
+          <span>Analytics</span>
+        </div>
+      </ul>
+
+      <h4 class="hide">Shortcuts</h4>
+
+      <ul>
+        <li class="tooltip-element" data-tooltip="0">
+          <a href="#" data-active="4">
+            <div class="icon">
+              <i class='bx bx-notepad'></i>
+              <i class='bx bxs-notepad'></i>
+            </div>
+            <span class="link hide">Tasks</span>
+          </a>
+        </li>
+        <li class="tooltip-element" data-tooltip="1">
+          <a href="#" data-active="5">
+            <div class="icon">
+              <i class='bx bx-help-circle'></i>
+              <i class='bx bxs-help-circle'></i>
+            </div>
+            <span class="link hide">Help</span>
+          </a>
+        </li>
+        <li class="tooltip-element" data-tooltip="2">
+          <a href="#" data-active="6">
+            <div class="icon">
+              <i class='bx bx-cog'></i>
+              <i class='bx bxs-cog'></i>
+            </div>
+            <span class="link hide">Settings</span>
+          </a>
+        </li>
+        <div class="tooltip">
+          <span class="show">Tasks</span>
+          <span>Help</span>
+          <span>Settings</span>
+        </div>
+      </ul>
+    </div>
+    {% if request.session.id %}
+    <div class="sidebar-footer">
+        <a href="{% url 'profile'%}" class="account tooltip-element" data-tooltip="0">
+          <i class='bx bx-user'></i>
+        </a>
+        <div class="admin-user tooltip-element" data-tooltip="1">
+          <div class="admin-profile hide">
+            <img src="/media/{{user.file}}/" height="20/"  alt="">
+            <div class="admin-info">
+              <a style="color: white;" href="{% url 'profile'%}">{{user.fname}} {{request.session.lname}}</a>
+              <h5>Contributor</h5>
+            </div>
+          </div>
+          <a href="{% url 'companylogout' %}" class="log-out">
+            <i class='bx bx-log-out'></i>
+          </a>
+        </div>
+        <div class="tooltip">
+          <span class="show">{{request.session.fname}} {{request.session.lname}}</span>
+          <span>Logout</span>
+        </div>
+      </div>
+      
+      {% else %}
+        <div class="sidebar-footer">
+          <span><a style="color: aliceblue; " href="">Register</a></span>
+          <span><a style="color: aliceblue;" href="">Login</a></span>
+       
+   
+    </div> 
+    {%  endif %}
+  </nav>
+
+   
+  <main>
+    {% if not request.session.id %}
+    <p>Looking for Guider!<a style="background-color:rgb(53, 53, 95);color: white; border-radius: 4px;" href="{% url 'loginpage' %}">Guiders</a></p>
+    {% else %}
+    <div class="leaflet-control modal-control" >
+      <a href="#modal-opened" class="link-1" id="modal-closed">Add missing Place</a>
+
+      <div class="modal-container"  id="modal-opened">
+        <div class="modal">
+      
+          <div class="modal__details">
+            <h1 class="modal__title">Add missing Place</h1>
+            <p class="modal__description">Input the details of place which has not added till now. Entering the wrong information will ban your account<br>Our Validator Team will validate your place once added </p>
+          </div>
+           <form action="" method="post">
+            <input class="form-element"  type="pname" placeholder="Place Name" required>
+            
+            <select class="form-element" name="cname"  id="">
+              <option value="" disabled selected>Category</option>
+              <optgroup label="Food and drink">
+                <option>Bakery</option>
+                <option>Bar</option>
+                <option>Butcher shop</option>
+                <option>Coffee Shop</option>
+                <option>Farm</option>
+                <option>Grocery store</option>
+                <option>Ice cream shop</option>
+                <option>Night club</option>
+                <option>Soup Kitchen</option>
+              <optgroup label="Shopping">
+                  <option>Shop</option>
+                  <option>Auto parts store</option>
+                  <option>Book shop</option>
+                  
+                  <option>Car dealer</option>
+                  <option>Clothing shop</option>
+                  <option>Computer shop</option>
+                  <option>Convenience shop</option>
+                  <option>Cosmetics shop</option>
+
+                  <option>Florist</option>
+                  <option>General store</option>
+                  <option>Gift shop</option>
+                  <option>Hardware shop</option>
+                  <option>Home Furniture shop</option>
+                  <option>Homewares shop</option>
+                  <option>Jewellery store</option>
+                  
+                  <option>Market</option>
+                  <option>Mobile Phone shop</option>
+                  <option>Pharmacy</option>
+                  <option>Shoe shop</option>
+                  <option>Shopping Centre</option>
+                  <option>Supermarket</option>
+                  <option>Tobacco shop</option>
+                  <option>Tyre shop</option>
+                  <optgroup label="Services">
+                    <option>Bakery</option>
+                    <option>Bar</option>
+                    <option>Butcher shop</option>
+                    <option>Coffee Shop</option>
+                    <option>Farm</option>
+                    <option>Grocery store</option>
+                    <option>Ice cream shop</option>
+                    <option>Night club</option>
+                    <option>Soup Kitchen</option>
+                  <optgroup label="Hotels and lodging">
+                      <option>Bakery</option>
+                      <option>Bar</option>
+                      <option>Butcher shop</option>
+                      <option>Coffee Shop</option>
+                      <option>Farm</option>
+                      <option>Grocery store</option>
+                      <option>Ice cream shop</option>
+                      <option>Night club</option>
+                      <option>Soup Kitchen</option>
+                  <optgroup label="Outdoors and recreation">
+                        <option>Bakery</option>
+                        <option>Bar</option>
+                        <option>Butcher shop</option>
+                        <option>Coffee Shop</option>
+                        <option>Farm</option>
+                        <option>Grocery store</option>
+                        <option>Ice cream shop</option>
+                        <option>Night club</option>
+                        <option>Soup Kitchen</option>
+                    <optgroup label="Religion">
+                          <option>Bakery</option>
+                          <option>Bar</option>
+                          <option>Butcher shop</option>
+                          <option>Coffee Shop</option>
+                          <option>Farm</option>
+                          <option>Grocery store</option>
+                          <option>Ice cream shop</option>
+                          <option>Night club</option>
+                          <option>Soup Kitchen</option>
+                    <optgroup label="Office and industrial">
+                            <option>Bakery</option>
+                            <option>Bar</option>
+                            <option>Butcher shop</option>
+                            <option>Coffee Shop</option>
+                            <option>Farm</option>
+                            <option>Grocery store</option>
+                            <option>Ice cream shop</option>
+                            <option>Night club</option>
+                            <option>Soup Kitchen</option>
+                      <optgroup label="Residential">
+                              <option>Bakery</option>
+                              <option>Bar</option>
+                              <option>Butcher shop</option>
+                              <option>Coffee Shop</option>
+                              <option>Farm</option>
+                              <option>Grocery store</option>
+                              <option>Ice cream shop</option>
+                              <option>Night club</option>
+                              <option>Soup Kitchen</option>
+                        <optgroup label="Education">
+                                <option>Bakery</option>
+                                <option>Bar</option>
+                                <option>Butcher shop</option>
+                                <option>Coffee Shop</option>
+                                <option>Farm</option>
+                                <option>Grocery store</option>
+                                <option>Ice cream shop</option>
+                                <option>Night club</option>
+                                <option>Soup Kitchen</option>
+                
+              </optgroup>
+            </select>
+            <input class="form-element"  type="aname" placeholder="Address" required>
+            <input class="form-element"  type="number" placeholder="Longitude" required>
+            <input class="form-element"  type="number" placeholder="Latitude" required>
+            <input class="form-element"  type="file" placeholder="Image" class="hidden"  required>
+           </form>
+      
+          <button class="modal__btn">Upload</button>
+      
+          <a href="#modal-closed" class="link-2"></a>
+      
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div style="width: 100%; height: 600px; border: 3px solid rgb(123, 53, 163);" id="map">
+      
+    </div>
+    {% if request.session.id %}
+   
+
+
+
+
+
+   
+    <!-- <p>Get 500 Reward points on adding a Place!<a style="background-color:rgb(53, 53, 95);color: white; border-radius: 4px;" href="{% url 'loginpage' %}">Add Place</a></p> -->
+    {% else %}
+      <p>Want to earn money by guiding Tourists!<a style="background-color:rgb(53, 53, 95);color: white; border-radius: 4px;" href="{% url 'registerform' %}">Register Now</a></p>
+      <p>Already have account!<a style="background-color:rgb(53, 53, 95);color: white; border-radius: 4px;" href="{% url 'loginpage' %}">Login Now</a></p>
+
+    {% endif %}
+    <!-- <p class="copyright">
+      &copy; 2023 - <span>TouristSpot</span> All Rights Reserved.
+    </p> -->
+  </main>
+ 
+ 
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" ></script>
+  <script src="{% static '/app.js' %}"></script>
+  <script>
+    var map = L.map('map').setView([28.2613, 83.9721], 7);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+L.marker([28.2613, 83.9721]).addTo(map)
+    .bindPopup('Pokhara.<br> Nepal.')
+    .openPopup();
+
+ 
+  </script>
+</body>
+
+</html>
